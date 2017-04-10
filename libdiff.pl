@@ -190,11 +190,17 @@ foreach my $cell (@cells) {
             do {
                 my $group = shift @{$subgroups[$level]};
 
-                #my $xx = $group->type;
                 try {
+                    $LANG{last} = $group->type;
                     $LANG{group_types}{$level} = $group->type;
-                }
-                    do next if (!defined $group);
+                };
+                #print "";
+                #try {
+                    #if (length $group->type > 0) {
+
+                    #}
+                #}
+                do next if (!defined $group);
 
                 if (length $group->name > 0) {
                     my $xx = $group->type;
@@ -229,6 +235,14 @@ foreach my $cell (@cells) {
                         $attr2 = $group2->attr($attr->name);
                     } else{
                         my @aattr2 = $group2->get_attributes();
+
+                        my $qqw = $attr->name;
+                        my $qq = $attr->value;
+                        my $aar = $group2->attr($attr->name);
+
+                        print "";
+
+
                         #do print $_->type for @aattr2;
                     }
                     if (defined $attr2) {
