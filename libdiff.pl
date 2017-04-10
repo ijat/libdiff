@@ -25,6 +25,7 @@ foreach (@attrs) {
     try {
         my @at2a;
         my $at2 = $parser2->attr($_->name);
+        $LANG{library} = $at2;
         if ($_->name eq "voltage_map") {
             my @at2b = $parser2->attrs($_->name);
             foreach my $val (@at2b) {
@@ -57,6 +58,7 @@ my @cells = $parser->cells;
 
 foreach my $cell (@cells) {
     my $cell2 = $parser2->get_groups('cell', ${\$cell->name});
+    $LANG{cell} = $cell->name;
     if (not defined $cell2) {
         print "> ${\$cell->name} is not available on both libs\n";
         next;
@@ -86,38 +88,150 @@ foreach my $cell (@cells) {
         print $cell_attr->name.': '.$cell_attr->value." | ${\$cell_attr2} " . $ats . "\n";
     }
 
+    # Cell nested groups and attributes
     my @cell_groups = $cell->get_groups();
     foreach my $cell_group (@cell_groups) {
-        print "\t\t[".$cell_group->type . "] (" . $cell_group->name . ")\n";
-        my $cgn = "\t\t[".$cell_group->type . "] (" . $cell_group->name . ")\n";
+        my $cell_group2;
+
+        $LANG{group_type} = $cell_group->type;
+        $LANG{group_name} = $cell_group->name;
+
+        if (length $cell_group->name > 0) {
+            $cell_group2 = $cell2->get_groups($cell_group->type, $cell_group->name);
+        } else {
+            $cell_group2 = $cell2->get_groups($cell_group->type);
+        }
+
+        my @ggroup2 = $cell_group2->get_groups();
+        do print $_->type for @ggroup2;
+
+        if (defined $cell_group2) {
+            my $tname = "";
+            if (defined $cell_group2->name) {
+                $tname = $cell_group2->name;
+            }
+            print "*" . $cell_group2->type. " (" . $tname . ")\n";
+        } else {
+            print "*" . $cell_group->type . " (". $cell_group->name .") is not available in both libs\n";
+            next;
+        }
+
         # Cell attrb
         my @cell_group_attrs = $cell_group->get_attributes();
-        print "\t\t\t".$_->name.': '.$_->value."\n" for @cell_group_attrs;
+        foreach my $cell_group_attr (@cell_group_attrs){
+            #print $cell_group_attr->name . ": ". $cell_group_attr->value ."\n";
+            my $ats;
+            my $cell_group_attr2 = $cell_group2->attr($cell_group_attr->name);
+
+            $ats = colored("[X]", 'bright_red on_black');
+            if (defined $cell_group_attr2) {
+                if (looks_like_number($cell_group_attr->value) and looks_like_number($cell_group_attr2)) {
+                    my $vdiff = (($cell_group_attr2 - $cell_group_attr->value) / abs($cell_group_attr->value)) * 100;
+                    $ats = "[" . sprintf("%.04g", $vdiff) . "% changes]";
+                } else {
+                    if ($cell_group_attr->value eq $cell_group_attr2) {
+                        $ats = colored("[/]", 'bright_green on_black');
+                    }
+                }
+            } else {
+                $cell_group_attr2 = "-";
+            }
+
+            print $cell_group_attr->name.': '.$cell_group_attr->value." | ${\$cell_group_attr2} " . $ats . "\n";
+        }
 
         # Cell groups
         my @groups = $cell_group->get_groups();
-        #push @{$subgroups[$level]}, @groups;
-        #print $_->type . "\nlalalala" for @groups;
 
         # Pins groups
         if (scalar @groups gt 0) {
             my @subgroups = ();
             my $level = 0;
+            my $group2;
 
             push @{$subgroups[$level]}, @groups;
 
             do {
                 my $group = shift @{$subgroups[$level]};
+                $LANG{group_types}{$level} = $group->type;
                 do next if (!defined $group);
 
+                if (length $group->name > 0) {
+                    my $xx = $group->type;
+                    my $xxx = $group->name;
+
+                    # Get cells (long way)
+                    #$group2 = $parser2->get_groups('cell', $LANG{cell})->get_groups($LANG{group_type},$LANG{group_name})->get_groups('internal_power');
+                    # Loop method
+                    for (my $i=0; $i < (scalar keys %{$LANG{group_types}}); $i = $i + 1){
+                        if ($i eq 0) {
+                            $group2 = $cell_group2->get_groups($LANG{group_types}{$i});
+                        } else {
+                            $group2 = $group2->get_groups($LANG{group_types}{$i});
+                        }
+                    }
+
+                    my $aaa = $group2->attr('index_1');
+                    #$group = $cell_group2->get_groups()
+
+                    # Note!
+                    # Will get undef if group name is not available on both libs
+                    my @test = $group2->get_groups('rise_power');
+                    #my $a = $test->type;
+                    foreach (@test) {
+                        my $aa = $_->name ;
+                        my $bb = $_->type;
+                        print "";
+                    }
+                    #$group2 = $zgroup2->get_groups('pin', 'A');
+
+                    my $x1xx = $group2->type;
+                    my $x2xxx = $group2->name;
+                    print "";
+
+                } else {
+                    my $xx = $group->type;
+                    my $xxx = $group->name;
+                    $group2 = $cell_group2->get_groups($group->type);
+                }
+
                 # indentation
-                my $in1 = "\t" x (3+$level);
-                my $in2 = "\t" x (4+$level);
+                my $in1 = " " x (2+$level);
+                my $in2 = " " x (3+$level);
 
                 print "${\$in1}\[".$group->type.'] ('.$group->name.")\n";
 
+                # Handling values
                 my @attrs = $group->get_attributes();
-                print "${\$in2}".$_->name.': '.$_->value."\n" for @attrs;
+                foreach my $attr (@attrs) {
+                    my $ats = colored("[X]", 'bright_red on_black');
+                    my $aa = $attr->name;
+                    my $cc = $attr->value;
+                    my $bb = $attr->type;
+                    my $attr2;
+                    if ($attr->type ne 'complex') {
+                        $attr2 = $group2->attr($attr->name);
+                    } else{
+                        my @aattr2 = $group2->get_attributes();
+                        do print $_->type for @aattr2;
+                    }
+                    if (defined $attr2) {
+                        if (looks_like_number($attr->value) and looks_like_number($attr2)) {
+                            my $vdiff = (($attr2 - $attr->value) / abs($attr->value)) * 100;
+                            $ats = "[" . sprintf("%.04g", $vdiff) . "% changes]";
+                        } else {
+                            if ($attr->value eq $attr2) {
+                                $ats = colored("[/]", 'bright_green on_black');
+                            }
+                        }
+                    } else {
+                        $attr2 = "-";
+                    }
+
+                    print $attr->name.': '.$attr->value." | ${\$attr2} " . $ats . "\n";
+                }
+                #die;
+                #print "${\$in2}".$_->name.': '.$_->value."\n" for @attrs;
 
                 my @tgroups = $group->get_groups();
                 if (scalar @tgroups gt 0) {
@@ -125,14 +239,17 @@ foreach my $cell (@cells) {
                     push @{$subgroups[$level]}, @tgroups;
                 } else {
                     if (scalar @{$subgroups[$level]} eq 0) {
+                        undef $LANG{group_types}{$level};
                         $level = $level - 1;
                         pop @subgroups;
                     }
                 }
             } while (scalar @subgroups > 0);
         }
-    }
+        #push @{$subgroups[$level]}, @groups;
+        #print $_->type . "\nlalalala" for @groups;
 
+    }
     print "END \n";
 }
 
