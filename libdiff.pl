@@ -176,7 +176,6 @@ foreach my $cell (@cells) {
             print $cell_group_attr->name.': '.$cell_group_attr->value." | ${\$cell_group_attr2} " . $ats . "\n";
         }
 
-        #die;
         # Cell subgroups
         my @groups = $cell_group->get_groups();
         # Pins groups
@@ -194,26 +193,48 @@ foreach my $cell (@cells) {
                     $LANG{last} = $group->type;
                     $LANG{group_types}{$level} = $group->type;
                 };
-                #print "";
-                #try {
-                    #if (length $group->type > 0) {
 
-                    #}
-                #}
                 do next if (!defined $group);
 
+                print "";
+                # In a subgroup
                 if (length $group->name > 0) {
                     my $xx = $group->type;
                     my $xxx = $group->name;
 
-                    for (my $i=0; $i < (scalar keys %{$LANG{group_types}}); $i = $i + 1){
+                    #my $tg1;
+                    #my $tg2;
+
+                    for (my $i=0; $i < (scalar keys %{$LANG{group_types}}); $i = $i + 1) {
                         if ($i eq 0) {
+                            my @tg2 = $cell_group2->get_groups();
+                            foreach (@tg2) {
+                                my $tattr;
+                                if (defined $_->attr('when')) {
+                                    $tattr = $_->attr('when');
+                                } elsif (defined $_->attr('related_pin')) {
+                                    $tattr = $_->attr('related_pin')
+                                }
+
+                                if ($tattr eq $LANG{when}) {
+                                    $group2 = $_;
+                                    #undef $LANG{when};
+                                    print "";
+                                    last;
+                                }
+                                #my $saaa = $_->value;
+                                print "";
+                            }
                             $group2 = $cell_group2->get_groups($LANG{group_types}{$i});
                         } else {
                             $group2 = $group2->get_groups($LANG{group_types}{$i});
                         }
                     }
-                } else {
+
+                }
+                # Not in a group
+                else {
+                    my $zz = $group->type;
                     $group2 = $cell_group2->get_groups($group->type);
                 }
 
@@ -225,17 +246,27 @@ foreach my $cell (@cells) {
 
                 # Handling values
                 my @attrs = $group->get_attributes();
-                foreach my $attr (@attrs) {
+                foreach my $attr (sort @attrs) {
                     my $ats = colored("[X]", 'bright_red on_black');
                     my $attr2;
                     if ($attr->type ne 'complex') {
-                        $attr2 = $group2->attr($attr->name);
+                        if ($attr->name eq 'when' or $attr->name eq 'related_pin') {
+                            $LANG{when} = $attr->value;
+                        }
+                        if ($attr->name eq 'when') {
+                            my @tg2 = $cell_group2->get_groups();
+                            foreach (@tg2) {
+                                my $tattr;
+                                if (defined $_->attr('when')) {
+                                    if ($_->attr('when') eq $attr->value) {
+                                        $attr2 = $attr->value;
+                                    }
+                                }
+                            }
+                        } else {
+                            $attr2 = $group2->attr($attr->name);
+                        }
                     } else{
-                        my $qqw = $attr->name;
-                        my $qq = $attr->value;
-                        #my $aar = $group2->attr($attr->name);
-                        #my $aaa = $attr->value;
-
                         # Trim "
                         my $left = $attr->value =~ s/\"//gr;
                         my $right = $group2->attr($attr->name) =~ s/\"//gr;
@@ -244,6 +275,7 @@ foreach my $cell (@cells) {
                         my @aleft = split /,/, $left;
                         my @aright = split /,/, $right;
 
+                        # Remove white spaces
                         s{^\s+|\s+$}{}g foreach @aleft;
                         s{^\s+|\s+$}{}g foreach @aright;
 
@@ -260,7 +292,7 @@ foreach my $cell (@cells) {
 
                             } else {
                                 $tstr = $tstr . $aleft[$i] . " | - \n";
-                                # Both didnt match
+                               # Both didnt match
                             }
                         }
 
@@ -287,8 +319,6 @@ foreach my $cell (@cells) {
                         print $attr->name.': '.$attr->value." | ${\$attr2} ".$ats."\n";
                     }
                 }
-                #die;
-                #print "${\$in2}".$_->name.': '.$_->value."\n" for @attrs;
 
                 my @tgroups = $group->get_groups();
                 if (scalar @tgroups gt 0) {
@@ -299,11 +329,11 @@ foreach my $cell (@cells) {
                         undef $LANG{group_types}{$level};
                         $level = $level - 1;
                         pop @subgroups;
+                        undef $LANG{when};
                     }
                 }
             } while (scalar @subgroups > 0);
         }
-
     }
     print "END \n";
 }
