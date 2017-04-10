@@ -244,6 +244,9 @@ foreach my $cell (@cells) {
                         my @aleft = split /,/, $left;
                         my @aright = split /,/, $right;
 
+                        s{^\s+|\s+$}{}g foreach @aleft;
+                        s{^\s+|\s+$}{}g foreach @aright;
+
                         my $tstr = "";
 
                         for (my $i=0; $i < scalar @aleft; $i=$i+1) {
