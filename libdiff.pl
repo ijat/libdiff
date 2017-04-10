@@ -153,16 +153,16 @@ foreach my $cell (@cells) {
 
             do {
                 my $group = shift @{$subgroups[$level]};
-                $LANG{group_types}{$level} = $group->type;
+                #my $xx = $group->type;
+                try {
+                    $LANG{group_types}{$level} = $group->type;
+                }
                 do next if (!defined $group);
 
                 if (length $group->name > 0) {
                     my $xx = $group->type;
                     my $xxx = $group->name;
 
-                    # Get cells (long way)
-                    #$group2 = $parser2->get_groups('cell', $LANG{cell})->get_groups($LANG{group_type},$LANG{group_name})->get_groups('internal_power');
-                    # Loop method
                     for (my $i=0; $i < (scalar keys %{$LANG{group_types}}); $i = $i + 1){
                         if ($i eq 0) {
                             $group2 = $cell_group2->get_groups($LANG{group_types}{$i});
@@ -170,28 +170,7 @@ foreach my $cell (@cells) {
                             $group2 = $group2->get_groups($LANG{group_types}{$i});
                         }
                     }
-
-                    my $aaa = $group2->attr('index_1');
-                    #$group = $cell_group2->get_groups()
-
-                    # Note!
-                    # Will get undef if group name is not available on both libs
-                    my @test = $group2->get_groups('rise_power');
-                    #my $a = $test->type;
-                    foreach (@test) {
-                        my $aa = $_->name ;
-                        my $bb = $_->type;
-                        print "";
-                    }
-                    #$group2 = $zgroup2->get_groups('pin', 'A');
-
-                    my $x1xx = $group2->type;
-                    my $x2xxx = $group2->name;
-                    print "";
-
                 } else {
-                    my $xx = $group->type;
-                    my $xxx = $group->name;
                     $group2 = $cell_group2->get_groups($group->type);
                 }
 
@@ -246,13 +225,7 @@ foreach my $cell (@cells) {
                 }
             } while (scalar @subgroups > 0);
         }
-        #push @{$subgroups[$level]}, @groups;
-        #print $_->type . "\nlalalala" for @groups;
 
     }
     print "END \n";
 }
-
-#print "@attrs\n";
-#print "Library Name: $lib_name\n";
-#print $parser->get_attr_with_value($library_group,"nom_temperature");
