@@ -218,32 +218,51 @@ foreach my $cell (@cells) {
                 }
 
                 # indentation
-                my $in1 = " " x (2+$level);
-                my $in2 = " " x (4+$level);
+                #my $in1 = " " x (2+$level);
+                #my $in2 = " " x (4+$level);
 
-                print "${\$in1}\[".$group->type.'] ('.$group->name.")\n";
+                print "[".$group->type.'] ('.$group->name.")\n";
 
                 # Handling values
                 my @attrs = $group->get_attributes();
                 foreach my $attr (@attrs) {
                     my $ats = colored("[X]", 'bright_red on_black');
-                    my $aa = $attr->name;
-                    my $cc = $attr->value;
-                    my $bb = $attr->type;
                     my $attr2;
                     if ($attr->type ne 'complex') {
                         $attr2 = $group2->attr($attr->name);
                     } else{
-                        my @aattr2 = $group2->get_attributes();
-
                         my $qqw = $attr->name;
                         my $qq = $attr->value;
-                        my $aar = $group2->attr($attr->name);
+                        #my $aar = $group2->attr($attr->name);
+                        #my $aaa = $attr->value;
 
-                        print "";
+                        # Trim "
+                        my $left = $attr->value =~ s/\"//gr;
+                        my $right = $group2->attr($attr->name) =~ s/\"//gr;
 
+                        # Split ,
+                        my @aleft = split /,/, $left;
+                        my @aright = split /,/, $right;
 
-                        #do print $_->type for @aattr2;
+                        my $tstr = "";
+
+                        for (my $i=0; $i < scalar @aleft; $i=$i+1) {
+                            if (defined $aleft[$i] and defined $aright[$i]) {
+
+                                if (looks_like_number($aleft[$i]) and looks_like_number($aright[$i])) {
+                                    my $vdiff = (($aright[$i] - $aleft[$i]) / abs($aleft[$i])) * 100;
+                                    my $oline = $aleft[$i] . " | " . $aright[$i] . " [" . sprintf("%.04g", $vdiff) . "% changes]";
+                                    $tstr = $tstr . $oline . "\n";
+                                }
+
+                            } else {
+                                $tstr = $tstr . $aleft[$i] . " | - \n";
+                                # Both didnt match
+                            }
+                        }
+
+                        $attr2 = $tstr;
+
                     }
                     if (defined $attr2) {
                         if (looks_like_number($attr->value) and looks_like_number($attr2)) {
@@ -254,11 +273,16 @@ foreach my $cell (@cells) {
                                 $ats = colored("[/]", 'bright_green on_black');
                             }
                         }
-                    } else {
+                    }
+                    else {
                         $attr2 = "-";
                     }
 
-                    print $attr->name.': '.$attr->value." | ${\$attr2} " . $ats . "\n";
+                    if (defined $attr2 and $attr->type eq 'complex') {
+                        print $attr->name.":\n".$attr2."\n";
+                    } else {
+                        print $attr->name.': '.$attr->value." | ${\$attr2} ".$ats."\n";
+                    }
                 }
                 #die;
                 #print "${\$in2}".$_->name.': '.$_->value."\n" for @attrs;
