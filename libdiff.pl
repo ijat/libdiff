@@ -202,25 +202,40 @@ foreach my $cell (@cells) {
                     my $xx = $group->type;
                     my $xxx = $group->name;
 
-                    #my $tg1;
-                    #my $tg2;
-
                     for (my $i=0; $i < (scalar keys %{$LANG{group_types}}); $i = $i + 1) {
                         if ($i eq 0) {
                             my @tg2 = $cell_group2->get_groups();
                             foreach (@tg2) {
                                 my $tattr;
-                                if (defined $_->attr('when')) {
+                                my $tattr2;
+                                if (defined $_->attr('when') and defined $_->attr('related_pin')) {
+                                    $tattr = $_->attr('when');
+                                    $tattr2 = $_->attr('related_pin')
+                                }
+                                elsif (defined $_->attr('when')) {
                                     $tattr = $_->attr('when');
                                 } elsif (defined $_->attr('related_pin')) {
                                     $tattr = $_->attr('related_pin')
                                 }
 
-                                if ($tattr eq $LANG{when}) {
-                                    $group2 = $_;
-                                    #undef $LANG{when};
-                                    print "";
-                                    last;
+                                if (defined $tattr and defined $tattr2 and defined $LANG{when} and defined $LANG{'relpin'}) {
+                                    if ($tattr eq $LANG{when} and $tattr2 eq $LANG{'relpin'}) {
+                                        $group2 = $_;
+                                        print "";
+                                        last;
+                                    }
+                                } elsif (defined $LANG{when}) {
+                                    if ($tattr eq $LANG{when}) {
+                                        $group2 = $_;
+                                        print "";
+                                        last;
+                                    }
+                                } elsif (defined $LANG{relpin}) {
+                                    if ($tattr eq $LANG{relpin}) {
+                                        $group2 = $_;
+                                        print "";
+                                        last;
+                                    }
                                 }
                                 #my $saaa = $_->value;
                                 print "";
@@ -251,7 +266,12 @@ foreach my $cell (@cells) {
                     my $attr2;
                     if ($attr->type ne 'complex') {
                         if ($attr->name eq 'when' or $attr->name eq 'related_pin') {
-                            $LANG{when} = $attr->value;
+                            if ($attr->name eq 'when') {
+                                $LANG{when} = $attr->value;
+                            }
+                            if ($attr->name eq 'related_pin') {
+                                $LANG{relpin} = $attr->value;
+                            }
                         }
                         if ($attr->name eq 'when') {
                             my @tg2 = $cell_group2->get_groups();
