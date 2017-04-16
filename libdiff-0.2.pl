@@ -186,7 +186,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
                 if (looks_like_number($lib1{cells}{$cell}{$cell_attrb}) and looks_like_number($lib2{cells}{$cell}{$cell_attrb})) {
                     my $vdiff = (($lib2{cells}{$cell}{$cell_attrb} - $lib1{cells}{$cell}{$cell_attrb}) / abs($lib1{cells}{$cell}{$cell_attrb})) * 100;
                     $ats = "[".sprintf("%.04f", $vdiff)."% changes]";
-                    #$lib1{cells}{$cell}{$cell_attrb} = sprintf("%.04f", $lib1{cells}{$cell}{$cell_attrb});
                 }
 
                 if ($lib1{cells}{$cell}{$cell_attrb} eq $lib2{cells}{$cell}{$cell_attrb}) {
@@ -200,7 +199,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
             }
 
         } else {
-            # Process for hashes
 
             # Leakage power
             if ($cell_attrb eq 'leakage_power') {
@@ -212,7 +210,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
                             and looks_like_number($lib2{cells}{$cell}{$cell_attrb}{$when}{value})) {
                             my $vdiff = (($lib2{cells}{$cell}{$cell_attrb}{$when}{value} - $lib1{cells}{$cell}{$cell_attrb}{$when}{value}) / abs($lib1{cells}{$cell}{$cell_attrb}{$when}{value})) * 100;
                             $ats = "[".sprintf("%.04f", $vdiff)."% changes]";
-                            #$lib1{cells}{$cell}{$cell_attrb}{$when}{value} = sprintf("%.04f", $lib1{cells}{$cell}{$cell_attrb}{$when}{value});
                         }
                         print "    " . $ok . " " . $when . ": $lib1{cells}{$cell}{$cell_attrb}{$when}{value} | $lib2{cells}{$cell}{$cell_attrb}{$when}{value} $ats\n";
                     } else {
@@ -243,7 +240,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
 
                         } else {
 
-
                             if ($key eq 'internal_power') {
 
                                 print colored("     *  Internal Power\n", 'bright_green');
@@ -254,7 +250,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
                                         print "        WHEN: " . colored($when, 'yellow') . "\n";
 
                                         foreach my $subgroup (sort keys %{$lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}}) {
-                                            #my %ref = \$lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when};
 
                                             if (ref($lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subgroup}) ne '') {
                                                 my $subgroup_name1 = "";
@@ -297,7 +292,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
 
                                         }
 
-                                        #print "        " . $ok . " " . $when . ": " . $lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{when} . " | " . $lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{when} . "\n";
                                     } else {
                                         print "        " . $no . " " . $when . ": " . $lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{when} . " | - \n";
                                     }
@@ -384,10 +378,8 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
 
     }
 
-
-
     $index = $index + 1;
 }
 
-
 print "\n";
+exit(0);
