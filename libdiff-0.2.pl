@@ -1,3 +1,5 @@
+#!/bin/env perl
+
 use warnings;
 use strict;
 use Data::Dumper;
@@ -129,8 +131,16 @@ sub parse {
 
 print "\nlibdiff 0.2 - Diff tool for Liberty library files\n(C) 2017 Ijat.my\n\n";
 
-my %lib1 = parse("3input.lib"); #left
-my %lib2 = parse("ncx-3input.lib"); #right
+my %lib1;
+my %lib2;
+
+if (defined $ARGV[0] and defined $ARGV[1]) {
+    %lib1 = parse($ARGV[0]); #left
+    %lib2 = parse($ARGV[1]); #right
+} else {
+    print "To use this tool, type: \n   $0 lib1.lib lib2.lib\n\n";
+    exit;
+}
 
 my $ok = colored("[/]", 'bright_green');
 my $no = colored("[X]", 'bright_red');
@@ -363,36 +373,6 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
                                 }
 
                             }
-
-                            #foreach my $when (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}}) {
-
-                            #    foreach my $subkey (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}}) {
-
-                                    #print $subkey;
-
-                                    #if (ref($lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey}) eq '') {
-
-                                    #    if (defined $lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey}) {
-                                    #        my $ats = "";
-                                    #        if (looks_like_number($lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey})
-                                    #            and looks_like_number($lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey})) {
-                                    #            my $vdiff = (($lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey} - $lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey}) / abs($lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey})) * 100;
-                                    #            $ats = "[".sprintf("%.04f", $vdiff)."% changes]";
-                                    #        }
-                                    #        print "       " . $ok . " " . $subkey . ": " . $lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey} . " | $lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey} $ats\n";
-                                    #    } else {
-                                    #        print "       " . $no . " " . $subkey . ": " . $lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}{$subkey} . " | - \n";
-                                    #    }
-
-                                    #} else {
-                                        #print $subkey . "Hash \n";
-                                    #}
-
-
-
-                             #   }
-
-                            #}
 
                         }
                     }
