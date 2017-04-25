@@ -142,11 +142,24 @@ if (defined $ARGV[0] and defined $ARGV[1]) {
     exit;
 }
 
-my $ok = colored("[/]", 'bright_green');
-my $no = colored("[X]", 'bright_red');
+my $ok;
+my $no;
+
+if (defined $ARGV[2]) {
+    $ok = "[/]";
+    $no = "[X]";
+} else {
+    $ok = colored("[/]", 'bright_green');
+    $no = colored("[X]", 'bright_red');
+}
 
 # Compare library attributes
-print colored("[Library Attributes]\n", 'bright_cyan');
+if (defined $ARGV[2]) {
+    print "[Library Attributes]\n";
+} else {
+    print colored("[Library Attributes]\n", 'bright_cyan');
+}
+
 foreach my $attr (sort keys %{$lib1{library}}) {
 
     if (defined $lib2{library}{$attr}) {
@@ -170,10 +183,20 @@ foreach my $attr (sort keys %{$lib1{library}}) {
 }
 print "\n";
 
-print colored("[Cells]\n", 'bright_cyan');
+if (defined $ARGV[2]) {
+    print "[Cells]\n";
+} else {
+    print colored("[Cells]\n", 'bright_cyan');
+
+}
 my $index = 1;
 foreach my $cell (sort keys %{$lib1{cells}}) {
-    print colored($index . ". " . $cell . "\n", 'bright_yellow');
+    if (defined $ARGV[2]) {
+        print $index . ". " . $cell . "\n";
+    } else {
+        print colored($index . ". " . $cell . "\n", 'bright_yellow');
+    }
+
 
     foreach my $cell_attrb (sort keys %{$lib1{cells}{$cell}}) {
 
@@ -203,7 +226,12 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
             # Leakage power
             if ($cell_attrb eq 'leakage_power') {
                 my $ats;
-                print colored(" *  Leakage Power" . "\n", 'bright_magenta');
+                if (defined $ARGV[2]) {
+                    print " *  Leakage Power" . "\n";
+                } else {
+                    print colored(" *  Leakage Power" . "\n", 'bright_magenta');
+                }
+
                 foreach my $when (sort keys %{$lib1{cells}{$cell}{$cell_attrb}}) {
                     if (defined $lib2{cells}{$cell}{$cell_attrb}{$when}) {
                         if (looks_like_number($lib1{cells}{$cell}{$cell_attrb}{$when}{value})
@@ -221,7 +249,12 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
             # Pins
             if ($cell_attrb eq 'pin') {
                 foreach my $pin (sort keys %{$lib1{cells}{$cell}{$cell_attrb}}) {
-                    print colored(" *  Pin $pin" . "\n", 'bright_magenta');
+                    if (defined $ARGV[2]) {
+                        print " *  Pin $pin" . "\n";
+                    } else {
+                        print colored(" *  Pin $pin" . "\n", 'bright_magenta');
+                    }
+
 
                     foreach my $key (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}}) {
                         if (ref($lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}) eq '') {
@@ -242,12 +275,22 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
 
                             if ($key eq 'internal_power') {
 
-                                print colored("     *  Internal Power\n", 'bright_green');
+                                if (defined $ARGV[2]) {
+                                    print "     *  Internal Power\n";
+                                } else {
+                                    print colored("     *  Internal Power\n", 'bright_green');
+                                }
+
 
                                 foreach my $when (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}}) {
                                     if (defined $lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}) {
 
-                                        print "        WHEN: " . colored($when, 'yellow') . "\n";
+                                        if (defined $ARGV[2]) {
+                                            print "        WHEN: " . $when . "\n";
+                                        } else {
+                                            print "        WHEN: " . colored($when, 'yellow') . "\n";
+                                        }
+
 
                                         foreach my $subgroup (sort keys %{$lib2{cells}{$cell}{$cell_attrb}{$pin}{$key}{$when}}) {
 
@@ -298,10 +341,21 @@ foreach my $cell (sort keys %{$lib1{cells}}) {
                                 }
 
                             } elsif ($key eq 'timing') {
-                                print colored("     *  Timing\n", 'bright_green');
+                                if (defined $ARGV[2]) {
+                                    print "     *  Timing\n";
+                                }
+                                else {
+                                    print colored("     *  Timing\n", 'bright_green');
+                                }
+
 
                                 foreach my $relpin (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}}) {
-                                    print "        ├─ Related Pin: " . colored($relpin, 'bright_yellow') . "\n";
+                                    if (defined $ARGV[2]) {
+                                        print "        ├─ Related Pin: " . $relpin . "\n";
+                                    } else {
+                                        print "        ├─ Related Pin: " . colored($relpin, 'bright_yellow') . "\n";
+                                    }
+
 
                                     foreach my $subgroup (sort keys %{$lib1{cells}{$cell}{$cell_attrb}{$pin}{$key}{$relpin}}) {
 
